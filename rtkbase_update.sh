@@ -141,6 +141,12 @@ upd_2.3.0() {
   #'nothing to do'
   return
 }
+
+upd_2.3.1() {
+  #'nothing to do'
+  return
+}
+
 # standard update
 update
 # calling specific update function. If we are using v2.2.5, it will call the function upd_2.2.5
@@ -155,6 +161,11 @@ chown -R ${standard_user}:${standard_user} ${destination_directory}
 
 echo "Restart web server"
 systemctl restart rtkbase_web.service
-
+# restart ntrip/rtcm to send the new release number in the stream
+sleep 5
+systemctl is-active --quiet str2str_ntrip.service && systemctl restart str2str_ntrip.service
+systemctl is-active --quiet str2str_local_ntrip_caster.service && systemctl restart str2str_local_ntrip_caster.service
+systemctl is-active --quiet str2str_rtcm_svr.service && systemctl restart str2str_rtcm_svr.service
+systemctl is-active --quiet str2str_rtcm_serial.service && systemctl restart str2str_rtcm_serial.service
 #if a reboot is needed
 #systemctl reboot
