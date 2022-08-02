@@ -1,4 +1,14 @@
 # Changelog
+## [2.3.4] - 2022-04-01
+### Fixed 
+ - Failure with some python dependancies. #215
+ - More fixes with Gpsd service restart. #94
+
+## [2.3.3] - 2022-02-28
+### Fixed
+- Fix the Rinex conversion failure. #206
+- Restart Ntrip/Rtcm services after an update. #171
+- When the Main service restart, Gpsd service restart too #94
 
 ## [2.3.2] - 2022-02-22
 ### Added
