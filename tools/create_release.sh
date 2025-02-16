@@ -27,6 +27,10 @@ tar --exclude-vcs \
     --exclude='test.sh' \
     --exclude='test.conf' \
     --exclude='*.pyc' \
+    --exclude='rtkbase/venv' \
+    --exclude='rtkbase/tools/find_rtkbase/venv' \
+    --exclude='rtkbase/tools/find_rtkbase/build' \
+    --exclude='rtkbase/tools/find_rtkbase/dist' \
     $TAR_ARG $ARCHIVE_NAME rtkbase/
  
 echo '========================================================'

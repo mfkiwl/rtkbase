@@ -9,7 +9,7 @@ Frontend's main features are:
 
 + View the satellites signal levels
 + View the base location on a map
-+ Detect and configure the Gnss receiver (F9P)
++ Detect and configure the Gnss receiver (Ublox F9P, Septentrio Mosaic-X5, Unicore UM980 / UM982)
 + Start/stop various services (Sending data to a Ntrip caster, internal Ntrip caster, Rtcm server, Sending Rtcm stream on a radio link, Log raw data to files)
 + Edit the services settings
 + Convert raw data to Rinex
@@ -27,7 +27,7 @@ Frontend's main features are:
 Other images are available in the ./images folder.
 
 ## Ready to flash release:
-A ready to flash image is available for Orange Pi Zero SBC : [Armbian_RTKBase](https://github.com/Stefal/build/releases/latest)
+A ready to flash image is available for Orange Pi Zero, Orange Pi Zero 2, Orange Pi Zero 3 SBC : [Armbian_RTKBase](https://github.com/Stefal/build/releases/latest)
 
 If you use a Raspberry Pi, thanks to [jancelin](https://github.com/jancelin), you can download a ready to flash iso file [here](https://github.com/jancelin/pi-gen/releases/latest).
 
@@ -43,7 +43,7 @@ If you use a Raspberry Pi, thanks to [jancelin](https://github.com/jancelin), yo
   sudo ./install.sh --all release
   ```
 
-+ Go grab a coffee, it's gonna take a while. The script will install the needed software, and if you use a Usb-connected U-Blox ZED-F9P receiver, it'll be detected and set to work as a base station. If you don't use a F9P, you will have to configure your receiver manually (see step 7 in manual installation), and choose the correct port from the settings page.
++ Go grab a coffee, it's gonna take a while. The script will install the needed software, and if you use a supported receiver (U-Blox ZED-F9P, Septentrio Mosaic-X5, Unicore UM980/UM982), it'll be detected and set to work as a base station. If you don't use a supported recevier, you will have to configure your receiver manually (see step 7 in manual installation), and choose the correct port from the settings page.
 
 + Open a web browser to `http://ip_of_your_sbc` (the script will try to show you this ip address). Default password is `admin`. The settings page allows you to enter your own settings for the base coordinates, ntrip credentials and so on...
 
@@ -53,6 +53,12 @@ If you use a Raspberry Pi, thanks to [jancelin](https://github.com/jancelin), yo
    - [rtklibexplorer - Post-processing RTK - for single and dual frequency receivers](https://rtklibexplorer.wordpress.com/2020/02/05/rtklib-tips-for-using-a-cors-station-as-base/)
    - [rtklibexplorer - PPP - for dual frequency receivers](https://rtklibexplorer.wordpress.com/2017/11/23/ppp-solutions-with-the-swiftnav-piksi-multi/)
    - [Centipede documentation (in french)](https://docs.centipede.fr/docs/base/positionnement.html)
+
++ To help you find your base ip address, you can use the simple `find_rtkase` gui tool. It is available for Gnu/Linux and Windows in [./tools/find_rtkbase/dist](./tools/find_rtkbase/dist/).
+  
+   - Click on the "Find" button, wait, then click on the "Open" button. It will open the RTKBase GUI in your web browser.
+
+     <img src="./tools/find_rtkbase/find_rtkbase_screenshot.png" alt="screenshot of find_rtkbase tool" width="300" />
 
 ## Manual installation: 
 The `install.sh` script can be used without the `--all` option to split the installation process into several different steps:
@@ -87,8 +93,8 @@ The `install.sh` script can be used without the `--all` option to split the inst
                              Install all dependencies like git build-essential python3-pip ...
     
             -r | --rtklib
-                             Get RTKlib 2.4.3b34g from github and compile it.
-                             https://github.com/rtklibexplorer/RTKLIB/tree/b34g
+                             Get RTKlib 2.4.3b34j from github and compile it.
+                             https://github.com/rtklibexplorer/RTKLIB/tree/b34j
     
             -b | --rtkbase-release
                              Get last release of RTKBase:
@@ -111,7 +117,7 @@ The `install.sh` script can be used without the `--all` option to split the inst
                              from the gnss receiver.
     
             -e | --detect-gnss
-                             Detect your GNSS receiver. It works only with receiver like ZED-F9P.
+                             Detect your GNSS receiver.
     
             -n | --no-write-port
                              Doesn'\''t write the detected port inside settings.conf.
@@ -126,7 +132,9 @@ The `install.sh` script can be used without the `--all` option to split the inst
             -h | --help
                               Display this help message.
    ```
+
 So, if you really want it, let's go for a manual installation with some explanations:
+
 1. Install dependencies with `sudo ./install.sh --dependencies`, or do it manually with:
    ```bash
     sudo apt update
@@ -138,7 +146,7 @@ So, if you really want it, let's go for a manual installation with some explanat
 
       ```bash
       cd ~
-      wget -qO - https://github.com/rtklibexplorer/RTKLIB/archive/refs/tags/b34g.tar.gz | tar -xvz
+      wget -qO - https://github.com/rtklibexplorer/RTKLIB/archive/refs/tags/b34j.tar.gz | tar -xvz
       ```
 
    + compile and install str2str:
@@ -216,18 +224,17 @@ So, if you really want it, let's go for a manual installation with some explanat
       sudo systemctl enable gpsd
    ```
 
-1. Connect your gnss receiver to raspberry pi/orange pi/.... with usb or uart, and check which com port it uses (ttyS1, ttyAMA0, something else...). If it's a U-Blox usb receiver, you can use `sudo ./install.sh --detect-gnss`. Write down the result, you may need it later.
+1. Install the avahi service definition with `sudo ./install.sh --zeroconf`, or:
+   + Copy the `rtkbase_web.service` file from `rtkbase/tools/zeroconf/` directory to `/etc/avahi/services/`
+   + Replace `{port}` with the port number used by the web server (e.g. 80).  
 
-1. If you didn't have already configure your gnss receiver, you must set it to output raw data:
+1. Connect your gnss receiver to raspberry pi/orange pi/.... with usb or uart, and check which com port it uses (ttyS1, ttyAMA0, something else...). If it's a U-Blox F9P receiver (usb or uart) or a Septentrio Mosaic-X5 (usb), you can use `sudo ./install.sh --detect-gnss`. Write down the result, you may need it later.
+
+1. If you didn't have already configure your gnss receiver, you must set it to output raw or rtcm3 data:
    
-   If it's a U-Blox ZED-F9P (usb), you can use 
+   If it's a U-Blox ZED-F9P (usb or uart), or a Septentrio Mosaic-X5 (usb), or a Unicore UM980/UM982 you can use 
    ```bash
    sudo ./install.sh --detect-gnss --configure-gnss
-   ```
-
-   If it's a U-Blox ZED-F9P (uart), you can use this command (change the ttyS1 and 115200 value if needed)):
-   ```bash
-   rtkbase/tools/set_zed-f9p.sh /dev/ttyS1 115200 rtkbase/receiver_cfg/U-Blox_ZED-F9P_rtkbase.cfg
    ```
      
    If you need to use a config tool from another computer (like U-center), you can use `socat`:
@@ -264,6 +271,8 @@ RTKBase use several RTKLIB `str2str` instances started with `run_cast.sh` as sys
 The web GUI is available when the `rtkbase_web` service is running.
 
 ## Advanced:
++ Offline base station without U-Blox receiver, how to get date and time:
+If gpsd can't understand the raw data from your gnss receiver, you can enable the raw2nmea service. It will convert the raw data to the tcp port set in `settings.conf` (nmea_port) and gpsd will use it to feed chrony. `systemctl enable --now rtkbase_raw2nmea`
 + Aerial images:
 The default map background is OpenStreetMap, but you can switch to a worldwide aerial layer if you have a Maptiler key. To enable this layer, create a free account on [Maptiler](https://www.maptiler.com/), create a key and add it to `settings.conf` inside the `[general]` section:
 `maptiler_key=your_key`
@@ -276,7 +285,7 @@ If you want to install RTKBase from the dev branch, you can do it with these com
 cd ~
 wget https://raw.githubusercontent.com/Stefal/rtkbase/dev/tools/install.sh -O install.sh
 chmod +x install.sh
-sudo ./install.sh --alldev dev
+sudo ./install.sh --all repo --rtkbase-repo dev
 ```
 
 ## Other usages:
@@ -296,7 +305,7 @@ A gnss receiver with a timepulse output is a very accurate [stratum 0](https://e
 
 + Set gpsd and chrony to use PPS
 
-   + gpsd: comment the `DEVICE` line in `/etc/defaut/gpsd` and uncomment `#DEVICES="tcp:\\127.0.0.1:5015 \dev\pps0`
+   + gpsd: comment the `DEVICE` line in `/etc/defaut/gpsd` and uncomment `#DEVICES="tcp:\\127.0.0.1:5015 \dev\pps0`. Edit the port if you use the rtkbase_raw2nmea service.
 
    + chrony: inside `/etc/chrony/chrony.conf` uncomment the refclock pps line  and add noselect to the 'refclock SHM 0`. You should have something like this:
    ```
@@ -327,7 +336,8 @@ A gnss receiver with a timepulse output is a very accurate [stratum 0](https://e
 
    ```
 ## Requirements:
-Python >= 3.7
+Debian base distro >= 11 (Bullseye)
+Python >= 3.8
 
 ## History:
 See the [changelog](./CHANGELOG.md)
